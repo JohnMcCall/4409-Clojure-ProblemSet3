@@ -3,7 +3,9 @@
 
 ;; fillValues replaces the values in the expression with true or false, based on the map values
 (defn fillValues [expression values]
-  (let [fill (fn [keyword] (get values keyword))]
+  (let [fill (fn [keyword] (if (vector? keyword)
+                             (not (get values (second keyword)))
+                             (get values keyword)))]
     (map #(map fill %) expression)
     )
   )
@@ -23,6 +25,7 @@
 
 ;; Tests
 (is (= [[true] [false true]] (fillValues [ [:p] [:q :r] ] {:p true :q false :r true})))
+(is (= [[true] [false false]] (fillValues [ [:p] [:q [:not :r]] ] {:p true :q false :r true})))
 
 (is (= true (evaluate [ [:p] [:q :r] ] {:p true :q false :r true})))
 (is (= false (evaluate [ [:p] [:q :r] ] {:p true :q false :r false})))
@@ -30,3 +33,6 @@
 (is (= [true false false] (check-assignment-list [ [:p] [:q :r] ] [{:p true, :q false, :r true},
                                                                    {:p true, :q false, :r false},
                                                                    {:p false, :q true, :r true}])))
+(is (= [true true false] (check-assignment-list [ [:p] [[:not :q] :r] ] [{:p true, :q false, :r true},
+                                                                          {:p true, :q false, :r false},
+                                                                          {:p false, :q true, :r true}])))

@@ -4,7 +4,9 @@
 
 ;; fillValues replaces the values in the expression with true or false, based on the map values
 (defn fillValues [expression values]
-  (let [fill (fn [keyword] (get values keyword))]
+  (let [fill (fn [keyword] (if (vector? keyword)
+                             (not (get values (second keyword)))
+                             (get values keyword)))]
     (pmap #(map fill %) expression)
     )
   )
