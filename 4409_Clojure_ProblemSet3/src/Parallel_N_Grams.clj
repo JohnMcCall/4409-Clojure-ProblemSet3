@@ -1,9 +1,9 @@
 (ns Parallel-N-Grams)
 
-;; Takes some txt files and returns a sequence of all of the words
+;; Takes some txt files and returns a list of sequences of all of the words in each file
 ; Known Issue: For some reason it includes an empty string ("") at the end of every line
 ; This effects the tri-grams because some of them will look like this: ["Hello" "" "Dave"]
-(defn get-word-seq [files] (clojure.string/split (apply str (interpose " " (map #(slurp %) files))) #"\s"))
+(defn get-word-seq [files] (map #(clojure.string/split % #"\s") (pmap #(slurp %) files) ))
 
 (defn get-tri-grams [words] 
 	(loop [toReturn [], wordsLeft words]
@@ -16,5 +16,5 @@
 
 ;; Takes some text files and returns a map of the number of occurrences of each tri-gram
 (defn tri-grams-from-files [files]
-  (frequencies (get-tri-grams (get-word-seq files)))
+   (apply merge-with + (pmap frequencies (pmap #(get-tri-grams %) (get-word-seq files))))
   )
